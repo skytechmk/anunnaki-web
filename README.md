@@ -2,12 +2,28 @@
 
 A futuristic, ancient-alien themed website for the AnunnakiWorld trading system whitepaper.
 
-## Portainer Deployment
+## Deploy via Portainer Stack (Recommended)
+
+### Method 1: Direct from GitHub Repository
 
 1. In Portainer:
    - Go to "Stacks" → "Add stack"
-   - Name your stack (e.g., "anunnaki-web")
-   - Copy and paste this docker-compose configuration:
+   - Select "Repository" as build method
+   - Fill in the following:
+     ```
+     Repository URL: https://github.com/skytechmk/anunnaki-web.git
+     Repository reference: main
+     Compose path: docker-compose.yml
+     ```
+   - Click "Deploy the stack"
+
+### Method 2: Manual Configuration
+
+If you prefer to configure manually:
+1. In Portainer:
+   - Go to "Stacks" → "Add stack"
+   - Select "Web editor"
+   - Copy and paste this configuration:
 
 ```yaml
 version: '3.8'
@@ -36,32 +52,32 @@ networks:
 ```
 
 2. Click "Deploy the stack"
-3. Access the website at `http://your-server-ip:24601`
+3. Access at `http://your-server-ip:24601`
 
-### Monitoring in Portainer
+## Stack Auto-Updates
 
-1. View Logs:
-   - Go to your stack
-   - Click on the container
-   - Select "Logs" tab
-   - You'll see logs similar to:
-   ```
-   * Serving Flask app 'app'
-   * Running on http://127.0.0.1:5000
-   * Running on http://172.17.0.5:5000
-   ```
+To enable automatic updates when the repository changes:
+1. In Portainer stack settings:
+   - Enable "Automatic Updates"
+   - Set "Update Interval" (e.g., 5 minutes)
+   - Select "Always pull image"
 
-2. Monitor Resources:
-   - Container stats available in the "Stats" tab
-   - Network information in the "Networks" tab
+## Monitoring
 
-### Troubleshooting
+### View Logs
+- Go to your stack
+- Click on the container
+- Select "Logs" tab
+- Example logs:
+  ```
+  * Serving Flask app 'app'
+  * Running on http://127.0.0.1:5000
+  * Running on http://172.17.0.5:5000
+  ```
 
-If you see warnings like:
-```
-WARNING! This is a development server. Do not use it in a production deployment.
-```
-This is normal for Flask development server - it's safe for testing but consider using gunicorn for production.
+### Monitor Resources
+- Container stats in "Stats" tab
+- Network info in "Networks" tab
 
 ## Alternative Deployment Methods
 
@@ -76,8 +92,9 @@ docker run -p 24601:5000 skytechmk/anunnaki-web:latest
 docker-compose up -d
 ```
 
-## Development Setup
+## Development
 
+### Local Setup
 1. Install requirements:
 ```bash
 pip install -r requirements.txt
@@ -88,32 +105,35 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## Features
-
-- Futuristic design with ancient alien theme
-- Interactive glowing effects
-- Responsive layout
-- Pure CSS animations
-- Containerized deployment
-- Logging configuration
-- Network isolation
-
-## Structure
+## Repository Structure
 
 ```
-ANUN_WEB/
+anunnaki-web/
 ├── app.py              # Flask application
 ├── requirements.txt    # Python dependencies
 ├── Dockerfile         # Container configuration
-├── docker-compose.yml # Docker Compose setup
-├── static/
-│   ├── whitepaper.css # Styles
-│   └── whitepaper.js  # Interactive features
-└── templates/
-    └── whitepaper.html # Main page
+├── docker-compose.yml # Stack configuration
+├── static/           # Static assets
+└── templates/        # HTML templates
 ```
 
 ## Contact
 
 - GitHub: @skytechmk
 - Telegram: @Annunaki_World
+
+## Stack Configuration Details
+
+### Environment Variables
+- `FLASK_APP`: Main application file
+- `FLASK_ENV`: Production/Development mode
+- `PYTHONUNBUFFERED`: Ensures immediate log output
+
+### Logging Configuration
+- Driver: json-file
+- Max size: 10MB
+- Max files: 3
+
+### Network Configuration
+- Custom bridge network: anunnaki-net
+- Isolated container networking
