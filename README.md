@@ -88,7 +88,7 @@ anunnaki-web/
 
 ## Contact
 
-- GitHub: @skytechmk
+- GitHub: https://www.github.com/skytechmk
 - Telegram: @Annunaki_World
 
 ## Security Notes
