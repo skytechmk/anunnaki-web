@@ -2,28 +2,58 @@
 
 A futuristic, ancient-alien themed website for the AnunnakiWorld trading system whitepaper.
 
-## Deploy via Portainer Stack (Recommended)
+## Cloudflare Tunnel Deployment
 
-### Method 1: Direct from GitHub Repository
+### 1. Set Up Cloudflare Tunnel
+
+1. Install cloudflared CLI:
+```bash
+# On Debian/Ubuntu
+curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared.deb
+```
+
+2. Log in to Cloudflare:
+```bash
+cloudflared tunnel login
+```
+
+3. Create a tunnel:
+```bash
+cloudflared tunnel create anunnaki-web
+```
+
+4. Get your tunnel token:
+```bash
+cloudflared tunnel token <TUNNEL_ID>
+```
+
+5. Create a `.env` file:
+```bash
+echo "TUNNEL_TOKEN=your-tunnel-token-here" > .env
+```
+
+### 2. Deploy with Portainer
 
 1. In Portainer:
    - Go to "Stacks" → "Add stack"
-   - Select "Repository" as build method
-   - Fill in the following:
+   - Select "Repository"
+   - Fill in:
      ```
      Repository URL: https://github.com/skytechmk/anunnaki-web.git
      Repository reference: main
      Compose path: docker-compose.yml
      ```
-   - Click "Deploy the stack"
+   - Add Environment variables:
+     - Click "Load variables from .env file"
+     - Or manually add: `TUNNEL_TOKEN=your-tunnel-token-here`
 
-### Method 2: Manual Configuration
+2. Configure DNS:
+```bash
+cloudflared tunnel route dns <TUNNEL_ID> your-domain.com
+```
 
-If you prefer to configure manually:
-1. In Portainer:
-   - Go to "Stacks" → "Add stack"
-   - Select "Web editor"
-   - Copy and paste this configuration:
+### Docker Compose Configuration
 
 ```yaml
 version: '3.8'
@@ -32,7 +62,7 @@ services:
   web:
     image: skytechmk/anunnaki-web:latest
     ports:
-      - "24601:5000"  # Host port 24601, container port 5000
+      - "24601:5000"
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
@@ -46,55 +76,55 @@ services:
     networks:
       - anunnaki-net
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    restart: unless-stopped
+    networks:
+      - anunnaki-net
+    depends_on:
+      - web
+
 networks:
   anunnaki-net:
     driver: bridge
 ```
 
-2. Click "Deploy the stack"
-3. Access at `http://your-server-ip:24601`
+### Monitoring Tunnel Status
 
-## Stack Auto-Updates
+1. View Tunnel Status:
+```bash
+cloudflared tunnel info <TUNNEL_NAME>
+```
 
-To enable automatic updates when the repository changes:
-1. In Portainer stack settings:
-   - Enable "Automatic Updates"
-   - Set "Update Interval" (e.g., 5 minutes)
-   - Select "Always pull image"
+2. Check Logs in Portainer:
+   - Go to your stack
+   - Click on the cloudflared container
+   - Select "Logs" tab
 
-## Monitoring
+### Troubleshooting
 
-### View Logs
-- Go to your stack
-- Click on the container
-- Select "Logs" tab
-- Example logs:
-  ```
-  * Serving Flask app 'app'
-  * Running on http://127.0.0.1:5000
-  * Running on http://172.17.0.5:5000
-  ```
+1. Check Tunnel Connection:
+```bash
+cloudflared tunnel list
+```
 
-### Monitor Resources
-- Container stats in "Stats" tab
-- Network info in "Networks" tab
+2. Verify DNS Configuration:
+```bash
+cloudflared tunnel route ip show
+```
+
+3. Common Issues:
+   - If tunnel fails to connect, check:
+     - TUNNEL_TOKEN is correct
+     - DNS records are properly configured
+     - Firewall settings allow outbound connections
 
 ## Alternative Deployment Methods
 
-### Direct Docker Run
-```bash
-docker pull skytechmk/anunnaki-web:latest
-docker run -p 24601:5000 skytechmk/anunnaki-web:latest
-```
-
-### Local Docker Compose
-```bash
-docker-compose up -d
-```
-
-## Development
-
-### Local Setup
+### Local Development
 1. Install requirements:
 ```bash
 pip install -r requirements.txt
@@ -105,6 +135,12 @@ pip install -r requirements.txt
 python app.py
 ```
 
+### Direct Docker Run
+```bash
+docker pull skytechmk/anunnaki-web:latest
+docker run -p 24601:5000 skytechmk/anunnaki-web:latest
+```
+
 ## Repository Structure
 
 ```
@@ -112,7 +148,8 @@ anunnaki-web/
 ├── app.py              # Flask application
 ├── requirements.txt    # Python dependencies
 ├── Dockerfile         # Container configuration
-├── docker-compose.yml # Stack configuration
+├── docker-compose.yml # Stack configuration with Cloudflare Tunnel
+├── .env              # Environment variables (git-ignored)
 ├── static/           # Static assets
 └── templates/        # HTML templates
 ```
@@ -122,18 +159,9 @@ anunnaki-web/
 - GitHub: @skytechmk
 - Telegram: @Annunaki_World
 
-## Stack Configuration Details
+## Security Notes
 
-### Environment Variables
-- `FLASK_APP`: Main application file
-- `FLASK_ENV`: Production/Development mode
-- `PYTHONUNBUFFERED`: Ensures immediate log output
-
-### Logging Configuration
-- Driver: json-file
-- Max size: 10MB
-- Max files: 3
-
-### Network Configuration
-- Custom bridge network: anunnaki-net
-- Isolated container networking
+- Keep your TUNNEL_TOKEN secure
+- Don't commit .env file to git
+- Regularly update cloudflared image
+- Monitor tunnel access logs

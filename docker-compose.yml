@@ -4,11 +4,11 @@ services:
   web:
     image: skytechmk/anunnaki-web:latest
     ports:
-      - "24601:5000"  # Changed to match the port in the logs
+      - "24601:5000"
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
-      - PYTHONUNBUFFERED=1  # Ensures Python output is sent straight to container log
+      - PYTHONUNBUFFERED=1
     logging:
       driver: "json-file"
       options:
@@ -17,6 +17,17 @@ services:
     restart: unless-stopped
     networks:
       - anunnaki-net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    restart: unless-stopped
+    networks:
+      - anunnaki-net
+    depends_on:
+      - web
 
 networks:
   anunnaki-net:

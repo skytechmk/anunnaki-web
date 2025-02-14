@@ -36,3 +36,11 @@ Thumbs.db
 
 # Docker
 .docker/
+
+# Environment variables
+.env
+!.env.example
+
+# Logs
+*.log
+logs/
