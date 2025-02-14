@@ -3,13 +3,21 @@ version: '3.8'
 services:
   web:
     image: skytechmk/anunnaki-web:latest
-    build: .
     ports:
-      - "5000:5000"
-    volumes:
-      - ./static:/app/static
-      - ./templates:/app/templates
+      - "24601:5000"  # Changed to match the port in the logs
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1  # Ensures Python output is sent straight to container log
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
+    networks:
+      - anunnaki-net
+
+networks:
+  anunnaki-net:
+    driver: bridge
