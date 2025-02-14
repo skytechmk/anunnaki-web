@@ -2,38 +2,7 @@
 
 A futuristic, ancient-alien themed website for the AnunnakiWorld trading system whitepaper.
 
-## Cloudflare Tunnel Deployment
-
-### 1. Set Up Cloudflare Tunnel
-
-1. Install cloudflared CLI:
-```bash
-# On Debian/Ubuntu
-curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-sudo dpkg -i cloudflared.deb
-```
-
-2. Log in to Cloudflare:
-```bash
-cloudflared tunnel login
-```
-
-3. Create a tunnel:
-```bash
-cloudflared tunnel create anunnaki-web
-```
-
-4. Get your tunnel token:
-```bash
-cloudflared tunnel token <TUNNEL_ID>
-```
-
-5. Create a `.env` file:
-```bash
-echo "TUNNEL_TOKEN=your-tunnel-token-here" > .env
-```
-
-### 2. Deploy with Portainer
+## Quick Portainer Deployment with Cloudflare Tunnel
 
 1. In Portainer:
    - Go to "Stacks" → "Add stack"
@@ -44,16 +13,17 @@ echo "TUNNEL_TOKEN=your-tunnel-token-here" > .env
      Repository reference: main
      Compose path: docker-compose.yml
      ```
-   - Add Environment variables:
-     - Click "Load variables from .env file"
-     - Or manually add: `TUNNEL_TOKEN=your-tunnel-token-here`
 
-2. Configure DNS:
-```bash
-cloudflared tunnel route dns <TUNNEL_ID> your-domain.com
-```
+2. Add Environment Variable:
+   - Click "Add environment variable"
+   - Add the following:
+     ```
+     TUNNEL_TOKEN=eyJhIjoiNDEyNTU1MTAwM2MyODk1ODI5Nzg0OGQ3MTNkMmQ3YjciLCJ0IjoiZWI0MDFhYzYtOTNjMy00OTdlLWIxYmMtZjEzODc5MzYyZjU0IiwicyI6IlpXSmhOV1ppTWpNdE5qTm1OQzAwTWpFNUxXSmtOalF0WXpsbFlUZzJPR0kxTkRVeiJ9
+     ```
 
-### Docker Compose Configuration
+3. Click "Deploy the stack"
+
+## Stack Components
 
 ```yaml
 version: '3.8'
@@ -67,11 +37,6 @@ services:
       - FLASK_APP=app.py
       - FLASK_ENV=production
       - PYTHONUNBUFFERED=1
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
     restart: unless-stopped
     networks:
       - anunnaki-net
@@ -86,60 +51,28 @@ services:
       - anunnaki-net
     depends_on:
       - web
-
-networks:
-  anunnaki-net:
-    driver: bridge
 ```
 
-### Monitoring Tunnel Status
+## Monitoring
 
-1. View Tunnel Status:
-```bash
-cloudflared tunnel info <TUNNEL_NAME>
-```
+### View Tunnel Status
+- In Portainer:
+  1. Go to your stack
+  2. Click on the cloudflared container
+  3. Select "Logs" tab
 
-2. Check Logs in Portainer:
-   - Go to your stack
-   - Click on the cloudflared container
-   - Select "Logs" tab
+### Check Web Service
+- In Portainer:
+  1. Go to your stack
+  2. Click on the web container
+  3. Select "Logs" tab
 
-### Troubleshooting
+## Troubleshooting
 
-1. Check Tunnel Connection:
-```bash
-cloudflared tunnel list
-```
-
-2. Verify DNS Configuration:
-```bash
-cloudflared tunnel route ip show
-```
-
-3. Common Issues:
-   - If tunnel fails to connect, check:
-     - TUNNEL_TOKEN is correct
-     - DNS records are properly configured
-     - Firewall settings allow outbound connections
-
-## Alternative Deployment Methods
-
-### Local Development
-1. Install requirements:
-```bash
-pip install -r requirements.txt
-```
-
-2. Run locally:
-```bash
-python app.py
-```
-
-### Direct Docker Run
-```bash
-docker pull skytechmk/anunnaki-web:latest
-docker run -p 24601:5000 skytechmk/anunnaki-web:latest
-```
+If the tunnel isn't connecting:
+1. Check cloudflared container logs
+2. Verify the TUNNEL_TOKEN is correctly set
+3. Ensure both containers are running
 
 ## Repository Structure
 
@@ -149,7 +82,6 @@ anunnaki-web/
 ├── requirements.txt    # Python dependencies
 ├── Dockerfile         # Container configuration
 ├── docker-compose.yml # Stack configuration with Cloudflare Tunnel
-├── .env              # Environment variables (git-ignored)
 ├── static/           # Static assets
 └── templates/        # HTML templates
 ```
@@ -161,7 +93,6 @@ anunnaki-web/
 
 ## Security Notes
 
-- Keep your TUNNEL_TOKEN secure
-- Don't commit .env file to git
-- Regularly update cloudflared image
-- Monitor tunnel access logs
+- The tunnel token is configured through Portainer environment variables
+- Stack automatically handles secure tunnel connection
+- All traffic is encrypted through Cloudflare's network
