@@ -2,32 +2,41 @@
 
 A futuristic, ancient-alien themed website for the AnunnakiWorld trading system whitepaper.
 
-## Running with Docker (Recommended)
+## Quick Start with Docker
 
-1. Make sure you have Docker and Docker Compose installed:
+Pull and run the image directly from Docker Hub:
 ```bash
-docker --version
-docker-compose --version
+docker pull skytechmk/anunnaki-web:latest
+docker run -p 5000:5000 skytechmk/anunnaki-web:latest
 ```
 
-2. Build and run the container:
+Or using Docker Compose:
 ```bash
-# Build and start
-docker-compose up --build
-
-# Or run in detached mode
-docker-compose up -d --build
+docker-compose up
 ```
 
-3. Open in browser:
-- Visit http://localhost:5000
+## Portainer Setup
 
-4. Stop the container:
-```bash
-docker-compose down
+To deploy using Portainer:
+
+1. In Portainer, go to "Stacks" → "Add stack"
+2. Copy and paste this docker-compose.yml content:
+```yaml
+version: '3.8'
+
+services:
+  web:
+    image: skytechmk/anunnaki-web:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+    restart: unless-stopped
 ```
+3. Click "Deploy the stack"
 
-## Manual Setup (Alternative)
+## Local Development Setup
 
 1. Install requirements:
 ```bash
@@ -39,9 +48,6 @@ pip install -r requirements.txt
 python app.py
 ```
 
-3. Open in browser:
-- Visit http://localhost:5000
-
 ## Features
 
 - Futuristic design with ancient alien theme
@@ -49,7 +55,6 @@ python app.py
 - Responsive layout
 - Pure CSS animations
 - No image dependencies
-- Dockerized for easy deployment
 
 ## Structure
 
@@ -57,8 +62,8 @@ python app.py
 ANUN_WEB/
 ├── app.py              # Flask application
 ├── requirements.txt    # Python dependencies
-├── Dockerfile         # Docker configuration
-├── docker-compose.yml # Docker Compose configuration
+├── Dockerfile         # Container configuration
+├── docker-compose.yml # Docker Compose setup
 ├── static/
 │   ├── whitepaper.css # Styles
 │   └── whitepaper.js  # Interactive features
@@ -66,28 +71,23 @@ ANUN_WEB/
     └── whitepaper.html # Main page
 ```
 
+## Docker Commands
+
+```bash
+# Pull the image
+docker pull skytechmk/anunnaki-web:latest
+
+# Run the container
+docker run -p 5000:5000 skytechmk/anunnaki-web:latest
+
+# Build locally
+docker build -t skytechmk/anunnaki-web:latest .
+
+# Push to Docker Hub (requires login)
+docker push skytechmk/anunnaki-web:latest
+```
+
 ## Contact
 
 - GitHub: @skytechmk
 - Telegram: @Annunaki_World
-
-## Docker Commands Reference
-
-```bash
-# Build the image
-docker build -t anunnaki-web .
-
-# Run the container
-docker run -p 5000:5000 anunnaki-web
-
-# View running containers
-docker ps
-
-# Stop container
-docker stop <container_id>
-
-# Remove container
-docker rm <container_id>
-
-# Remove image
-docker rmi anunnaki-web
